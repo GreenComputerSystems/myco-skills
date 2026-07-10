@@ -38,8 +38,14 @@ Interpret the user's request as one of four modes:
    (comments, social buttons, player if audio content) and counters.
 4. If the site has images/audio to reference, fetch
    https://myco.stream/llms/assets.md and conform.
-5. Finish with core.md's validation checklist and its "seeds" section
+5. Ask the owner for their claim code (myco.stream dashboard shows one
+   account-wide code) and set `node.claim_code` — without it their analytics
+   dashboard stays locked.
+6. Finish with core.md's validation checklist and its "seeds" section
    (MYCO.md download, README warning, build tripwire).
+7. After deploy, verify live: `GET https://api.myco.stream/api/validate?domain=<domain>`
+   — fix every `fail` in `checks[]`, re-run, then give the owner their status
+   link: `https://myco.stream/check?domain=<domain>`.
 
 ### `add <content-type>` ("add my podcast to Myco")
 
@@ -58,10 +64,21 @@ update `MYCO.md` if anything about the integration changed.
 
 ### `validate` ("check my Myco integration")
 
-Fetch https://myco.stream/llms/core.md, run its validation checklist against
-the project, and report pass/fail per item with fixes. Confirm a `MYCO.md`
-exists at the project root and matches the live manifest; create or correct it
-from https://myco.stream/sdk/MYCO.md if missing or stale.
+Two passes:
+
+1. **Live** (if the site is deployed): `GET https://api.myco.stream/api/validate?domain=<domain>`
+   returns `{ ok, summary, checks: [{ id, label, status: pass|fail|warn, detail }] }`
+   — the network's own view: script tag, manifest, schema, attribution,
+   registration. Report it, fix every `fail`. Owner-friendly version of the
+   same report: `https://myco.stream/check?domain=<domain>`.
+2. **Static**: fetch https://myco.stream/llms/core.md, run its validation
+   checklist against the project, report pass/fail per item with fixes.
+
+Confirm a `MYCO.md` exists at the project root and matches the live manifest;
+create or correct it from https://myco.stream/sdk/MYCO.md if missing or stale.
+Also check the browser console on a live page: myco.js logs a collapsed
+"integration report" (containers found, counters wired vs orphaned — orphaned
+means slug mismatch with the manifest).
 
 ## Hard rules (apply in every mode)
 
